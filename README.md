@@ -4,8 +4,16 @@
 - Abstract
 - Data Preprocessing
 - Wine Type Classification
+	- Logistic Regression
+	- LDA
+	- QDA
+	- K Nearest Neighbors
+	- Naive Bayes
+	- SVC
+	- XGBoost
 - Wine Quality Classification
 - Result and Discussion
+- Reference
 
 # Abstract
 
@@ -584,7 +592,7 @@ Fig. 14
 
 # Support Vector Classifier for Wine Quality
 
-可以從 Table 4 這張簡單的圖表中看到，在 SMOTE upsample 之前 Accuracy 分別只有 52.5% / 61.14%，但在 SMOTE upsample 後 Accuracy 分別提升了 1.57 和 1.28倍 來到 82.39% / 78.22%，且從 Fig. 15-3, 4 , Fig. 16-3, 4 的 Confusion Matrix 可以看到，在 SMOTE 前因為資料集中在 Quality 5~6，導致 Red wine 和 White wine 的分類幾乎也集中在 Quality 5~6 的部分，但在 SMOTE 過後，可以看到分類結果呈現了很好的對角線，即 True Positive。
+可以從 Table 4 這張簡單的圖表中看到，在 SMOTE upsample 之前 Accuracy 分別只有 52.5% / 61.14%，但在 SMOTE upsample 後 Accuracy 分別提升了 1.57 和 1.28倍 來到 82.39% / 78.22%，且從 Fig. 15-3, 4 , Fig. 16-3, 4 的 Confusion Matrix 可以看到，在 SMOTE 前因為資料集中在 Quality 5 ~ 6，導致 Red wine 和 White wine 的分類幾乎也集中在 Quality 5 ~ 6 的部分，但在 SMOTE 過後，可以看到分類結果呈現了很好的對角線，即 True Positive。
 
 在觀察 Model Complexity 的部分 (Fig. 15-7, 16-7)可以看到 Training error 大致隨著 gamma 和 C 值增加而降低，但紅白酒的 Testing error 都在 gamma 和 C 太大時會有一個上升趨勢，和 Training error 有一個背離的現象，代表有 Overfitting 的狀況。除此之外，在比較 Before / After SMOTE 的參數選擇和 Model Complexity 的部分 (Fig. 15-7, 16-7) 也可以看到 SVC 模型在 C 和 gamma 之間的 Trade-off 行為，我認為十分有趣 ！
 
