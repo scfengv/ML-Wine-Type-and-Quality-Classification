@@ -1,7 +1,11 @@
 # Wine Type and Quality Classification
 
 ## Content
-
+- Abstract
+- Data Preprocessing
+- Wine Type Classification
+- Wine Quality Classification
+- Result and Discussion
 
 # Abstract
 
@@ -21,7 +25,7 @@ $$
 
 Fig. 1 [1]
 
-# 1. Data Preprocessing
+# Data Preprocessing
 
 從 Table 1 & 2 可以觀察到資料在轉換前存在著很大的 Skewness 和 Kurtosis，特別是 “chlorides” 的在紅白酒的偏度都超過 5，紅酒的峰度更是高達 41，在 Log 轉換後，變數普遍表現得不錯，但 “residual sugar” , “chlorides” , “sulphates” 仍不夠接近於常態分佈，但在經過 Yeo-Johnson 轉換後，紅白酒的偏度絕對值都能落在 0.15以下，峰度除了少數變量以外也幾乎都能落在 1 以下，相較 Log 的表現更為出色，故本文將選擇 Yeo-Johnson 做為資料的轉換模式 (Fig. 2-1~11)。
 
@@ -53,11 +57,11 @@ Table 3-1 & Table 3-2
 
 ---
 
-# 2. Wine Type Classification
+# Wine Type Classification
 
 先說結論，在 Wine type Classification 用來分類的七個演算法當中，所有的 Accuracy 都達到了 95% 以上，甚至 Logistic Regression, LDA, QDA, XGBoost 都達到 99% 以上，而最高的是 XGBoost 的 99.46%。且在所有演算法中，預測白酒的精準度都比預測紅酒來得高，我認為這非常合理，因為兩種類的資料集大小本身存在差異 (白酒: 4898 ; 紅酒: 1599)，有更多的資料可以針對白酒做學習，自然精準度也會較高。
 
-另外，在所有模型中，”total sulfur dioxide” , “chlorides” & “volatile acidity” 均為 Feature Importance 的前三名，其分別對葡萄酒種類在 95% Confidence interval 下的機率分佈如 Fig. 4-1~3 (Wine = 1 紅酒 ; Wine = 0 白酒)，而 Feature Importance 相對非常低的 “residual sugar” , “alcohol” , “free sulfur dioxide” 分佈如 Fig. 4-4~6。可以觀察到重要的變量其分佈都是非常鮮明的，處在 0 < P < 1 的區間非常小，且由 Confidence interval 可以看到其標準差都很小。反觀三組較不重要的變數，”residual sugar” 和 “alcohol” 均只有分佈在白酒的區域，也可以從 Fig. 2-3, 2-11 看到這兩個變量在紅酒的部分幾乎沒有一個明顯的分佈，且峰度分別低達 -1.08 和 -0.93 (Table 2)。而 “free sulfur dioxide” 則是約有 1/3 的區間在 0 < P < 1 的區域，且從 Confidence interval 可以發現其標準差非常的大。
+另外，在所有模型中，”total sulfur dioxide” , “chlorides” & “volatile acidity” 均為 Feature Importance 的前三名，其分別對葡萄酒種類在 95% Confidence interval 下的機率分佈如 Fig. 4-1~3 (Wine = 1 紅酒 ; Wine = 0 白酒)，而 Feature Importance 相對非常低的 “residual sugar” , “alcohol” , “free sulfur dioxide” 分佈如 Fig. 4-4 ~ 6。可以觀察到重要的變量其分佈都是非常鮮明的，處在 0 < P < 1 的區間非常小，且由 Confidence interval 可以看到其標準差都很小。反觀三組較不重要的變數，”residual sugar” 和 “alcohol” 均只有分佈在白酒的區域，也可以看到這兩個變量在紅酒的部分幾乎沒有一個明顯的分佈，且峰度分別低達 -1.08 和 -0.93 (Table 2)。而 “free sulfur dioxide” 則是約有 1/3 的區間在 0 < P < 1 的區域，且從 Confidence interval 可以發現其標準差非常的大。
 
 以下為各演算法的個別表現，內容主要會包含四個部分
 
@@ -369,6 +373,7 @@ $$
 <img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/05480775-6d7b-41ce-842a-ad2c117872f4">
 
 Fig. 10-3
+
 ---
 
 # Random Forest
@@ -559,7 +564,7 @@ Fig. 13-3
 
 **Decision Tree**
 
-![Uploading 截圖 2023-05-02 13.30.58.png…]()
+<img width="1924" alt="截圖 2023-05-02 13 30 58" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/02c3db27-9488-45a9-af68-7ddd24f7f231">
 
 Fig. 13-4
 
@@ -567,13 +572,13 @@ Fig. 13-4
 
 ---
 
-# 3. Wine Quality Classification
+# Wine Quality Classification
 
-參考了 P. Cortez *et al.* 的文章結論顯示，SVC 在預測葡萄酒品質的表現是最好的 (相較於 Multiple Regression 和 Neural Networks)，故本文也以 SVC model 做 wine quality 的學習。文章中是以增加 Error tolerance 的方式使 Classification accuracy 從 43.2% 增加到 89.0%，SVC 中的誤差項通過設置誤差上限 $\epsilon$ 來限制，使得預測值和實際值之間的絕對差值小於或等於 $\epsilon$，通過調整 $\epsilon$ 的值，我們可以控制 SVC 模型的準確性。較小的 $\epsilon$ 值意味著模型對誤差的容忍度更嚴格，這容易導致 Overfitting，而較大的 $\epsilon$  值會導致 Underfitting。簡單來說，SVC 使我們能夠靈活地定義我們的模型可以接受多少誤差，並找到合適的直線或更高維度的超平面來擬合數據$_{[3], [4]}$。有鑒於 Wine Quality 呈非常漂亮的常態分佈 (Fig. 14)，但也代表著將在預測等級低的 3, 4 或 等級高的 8, 9 時，將因為資料數量不夠模型去做訓練的關係而導致預測失準，所以我的方法是用 SMOTE (Synthesized Minority Oversampling Technique, sampling strategy = “auto”) 來增加少數類別樣本，SMOTE 的採樣模式是通過在現有的少數類別樣本之間進行插值，為少數類別生成合成樣本。具體來說，它隨機選擇一個少數群體的樣本，並在特徵空間 (feature space) 中找到它的 k 個最近的鄰居 (k nearest neighbors)，然後隨機選擇這些鄰居中的一個，並在連接原始少數群體樣本和所選鄰居的線段上隨機選擇一個點，生成一個新的合成樣本$_{[5], [6]}$。
+參考了 P. Cortez *et al.* 的文章結論顯示，SVC 在預測葡萄酒品質的表現是最好的 (相較於 Multiple Regression 和 Neural Networks)，故本文也以 SVC model 做 wine quality 的學習。文章中是以增加 Error tolerance 的方式使 Classification accuracy 從 43.2% 增加到 89.0%，SVC 中的誤差項通過設置誤差上限 $\epsilon$ 來限制，使得預測值和實際值之間的絕對差值小於或等於 $\epsilon$，通過調整 $\epsilon$ 的值，我們可以控制 SVC 模型的準確性。較小的 $\epsilon$ 值意味著模型對誤差的容忍度更嚴格，這容易導致 Overfitting，而較大的 $\epsilon$  值會導致 Underfitting。簡單來說，SVC 使我們能夠靈活地定義我們的模型可以接受多少誤差，並找到合適的直線或更高維度的超平面來擬合數據 <sub>[3], [4]</sub> 。有鑒於 Wine Quality 呈非常漂亮的常態分佈 (Fig. 14)，但也代表著將在預測等級低的 3, 4 或 等級高的 8, 9 時，將因為資料數量不夠模型去做訓練的關係而導致預測失準，所以我的方法是用 SMOTE (Synthesized Minority Oversampling Technique, sampling strategy = “auto”) 來增加少數類別樣本，SMOTE 的採樣模式是通過在現有的少數類別樣本之間進行插值，為少數類別生成合成樣本。具體來說，它隨機選擇一個少數群體的樣本，並在特徵空間 (feature space) 中找到它的 k 個最近的鄰居 (k nearest neighbors)，然後隨機選擇這些鄰居中的一個，並在連接原始少數群體樣本和所選鄰居的線段上隨機選擇一個點，生成一個新的合成樣本 <sub>[5], [6]</sub>
 
 不同於文章中的做法，我利用 Grid Search CV 找出 SVC 對此資料集的最佳 Error tolerence (倒數正比於 SVC 中的 C) 和 gamma 值再比較有無使用 SMOTE 方法來上採樣的結果比較，包括 Confusion Matrix, Accuracy, Precision, Recall, F1 score, ROC curve 和 AUC，最後觀察其 Model Complexity 判斷是否有 Overfitting 的狀況。
 
-![Fig. 14](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot_(24).png)
+![newplot (24)](https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/2653e0ed-745f-4e34-8933-a4968d6464d6)
 
 Fig. 14
 
@@ -596,9 +601,11 @@ Fig. 14
 | Red wine | “total sulfur dioxide” | “free sulfur dioxide” | “citric acid” |
 | White wine | “total sulfur dioxide” | “free sulfur dioxide” | “residual sugar” |
 
+<img width="1299" alt="截圖 2023-09-17 14 39 04" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/bd999efa-45ff-4408-b1fa-089aaedfcdea">
+
 # Red
 
-## Grid Search CV
+**Grid Search CV**
 
 ```python
 params = {
@@ -616,71 +623,32 @@ After SMOTE
 	Best scores: 0.8404
 ```
 
-## Feature Importance
 
-![Fig. 15-1](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/Untitled%2028.png)
+**Feature Importance**
 
-Fig. 15-1
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/9b078489-0591-46bb-9c57-bf963db4687a">
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/63af2770-0a08-4c90-8419-84112a6c0fa1">
 
-![Fig. 15-2](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/Untitled%2029.png)
+Fig. 15-1 & Fig. 15-2
 
-Fig. 15-2
 
-### “total sulfur dioxide”
+**Model Performance**
 
-### “free sulfur dioxide”
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/544f3fd2-eb75-4087-affb-c1cf0cad0bc9">
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/b87bd2bd-b7b6-4972-9a83-358bb57561bf">
 
-### “citric acid”
+Fig. 15-3 & Fig. 15-4
 
-![截圖 2023-05-06 01.59.42.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_01.59.42.png)
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/c48729eb-cd33-43ee-ba3f-15ef45e324e2">
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/1f3c849e-3b57-4622-9d49-177949f7cafa">
 
-![截圖 2023-05-06 01.58.37.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_01.58.37.png)
-
-![截圖 2023-05-06 02.00.12.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_02.00.12.png)
-
-## Model Performance
-
-![Fig. 15-3](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2022.png)
-
-Fig. 15-3
-
-$$
-Acurracy:  52.5000 \% \\
-Precision: 73.2444 \% \\
-Recall: 52.5000 \% \\
-f1: 44.8806 \% \\
-$$
-
-![Fig. 15-5](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2023.png)
-
-Fig. 15-5
-
-## Model Complexity
-
-![Fig. 15-4](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2024.png)
-
-Fig. 15-4
-
-$$
-Acurracy:  82.3875 \% \\
-Precision: 81.8389 \% \\
-Recall: 82.3875 \% \\
-f1: 81.8673 \% \\
-$$
-
-![Fig. 15-6](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2025.png)
-
-Fig. 15-6
-
-![Fig. 15-7](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-03_21.16.59.png)
-
-Fig. 15-7
+Fig. 15-5 & Fig. 15-6
 
 ---
 
 # White
 
-## Grid Search CV
+**Grid Search CV**
 
 ```python
 params = {
@@ -698,85 +666,40 @@ After SMOTE
 	Best scores: 0.8794
 ```
 
-## Feature Selection
+**Feature Selection**
 
-![Fig. 16-1](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/Untitled%2030.png)
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/3816f0b7-4b9c-4edb-89e4-88366e151304">
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/95c6d715-6a7f-42e6-b08b-7037ec014e45">
 
-Fig. 16-1
+Fig. 16-1 & Fig. 16-2
 
-![Fig. 16-2](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/Untitled%2031.png)
+**Model Performance**
 
-Fig. 16-2
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/634131ea-6f60-424b-bfc0-a7ff70ee7cf5">
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/0b4e28b8-49d9-471c-b3d0-6d9fbb4f48cb">
+![newplot](https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/ffccffc2-210c-40e4-99c0-2e19b42bf70f)
 
-### “total sulfur dioxide”
+Fig. 16-3 & Fig. 16-4
 
-### “free sulfur dioxide”
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/c91fcc5a-12f1-401c-8534-3f4bce68d426">
+<img width="450" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/cc631eeb-e8d4-4d08-b3ab-2a67f80806ff">
 
-### “residual sugar”
+Fig. 16-5 & Fig. 16-6
 
-![截圖 2023-05-06 02.03.37.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_02.03.37.png)
-
-![截圖 2023-05-06 02.04.31.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_02.04.31.png)
-
-![截圖 2023-05-06 02.05.07.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_02.05.07.png)
-
-## Model Performance
-
-![Fig. 16-3](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2026.png)
-
-Fig. 16-3
-
-$$
-Acurracy:  61.1429 \%\\
-Precision: 78.7048 \%\\
-Recall: 61.1429 \%\\
-f1: 56.2975 \%\\
-$$
-
-![Fig. 16-5](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2027.png)
-
-Fig. 16-5
-
-![Fig. 16-4](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2028.png)
-
-Fig. 16-4
-
-$$
-Acurracy:  78.2168 \%\\
-Precision: 89.8805 \%\\
-Recall: 78.2168 \%\\
-f1: 80.4739 \%\\
-$$
-
-![Fig. 16-6](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/newplot%2029.png)
-
-Fig. 16-6
-
-## Model Complexity
-
-![Fig. 16-7](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-03_21.14.20.png)
-
-Fig. 16-7
-
-## Results and Discussion
+# Results and Discussion
 
 最後，我想針對 P. Cortez *et al.* 的文章做一些討論，從其文章中的 Table 2 可以看到，他用來衡量模型的標準是 Accuracy，但正如我的 Fig. 14 顯示，此資料集的 Quality 是集中在 5~6 這個區間，而作者也有畫出他們的 Confusion matrix，可以看到他們並無做 Over-sampling 等處理，表示其 Accuracy 數值會嚴重因為資料集中的問題而提高，我嘗試復刻他們的實驗（沒有轉換, 沒有 Over-sampling）而得到的 Classification Report 大致如下，雖然因為參數設定不同等原因不會完全一樣，但仍可以作為參考：
 
-$$
-Accuracy=\frac{TP+TN}{ALL} \ \ ;\ \ Precision=\frac{TP}{TP+FP}\ \ ;\ \ Recall=\frac{TP}{TP+FN}\ \ ;\ \ F1=\frac{2*Precision*Recall}{Precision+Recall}
-$$
+**Red wine**
 
-### Red wine
+<img width="520" alt="截圖 2023-05-06 01 13 18" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/1c0c9b25-56e2-4d0d-bfa1-91f74f170a94">
+<img width="260" alt="截圖 2023-05-06 01 27 58" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/4f262b96-1731-4a17-9f21-f6ee0412cb1b">
 
-![截圖 2023-05-06 01.13.18.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_01.13.18.png)
+**White wine**
 
-![截圖 2023-05-06 01.27.58.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_01.27.58.png)
+<img width="520" alt="截圖 2023-05-06 01 13 36" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/4396553d-53a2-455d-ba36-eb3eec497200">
+<img width="260" alt="截圖 2023-05-06 01 26 49" src="https://github.com/scfengv/Wine-Type-and-Quality-Classification/assets/123567363/0cf4bb7e-2f76-4bdc-a5ff-d476807c653a">
 
-### White wine
-
-![截圖 2023-05-06 01.13.36.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_01.13.36.png)
-
-![截圖 2023-05-06 01.26.49.png](Wine%20Type%20and%20Quality%20Classification%209989fb7091ff4c5281182e2fbebf3ee0/%25E6%2588%25AA%25E5%259C%2596_2023-05-06_01.26.49.png)
 
 從上述公式可以將 Precision 和 Recall 理解成，Precision 是計算被分類到此類的所有數據中，真的屬於這個類別的機率，而 Recall 則是所有屬於這個類別的數據中，真的被分到這類的機率。可以在 Red wine 的 Quality = 5 和 White wine 的 Quality =  6 中看到 Low Precision & High Recall 的現象，即表示被分到這個類別的資料分別有 54% 和 46% 不屬於這個類別，但屬於這個類別的資料都有確實被分類到此處。而在 Red wine 的 Quality = 6, 7 和 White wine 的 Quality = 4, 5, 7, 8 都有看到 High Precision & Low Recall 的現象，表示雖然被分到這個類別的資料確實都屬於此處，但該類別仍有很多資料四散在其他類別 (即前面提到的 Low Precision & High Recall 處)。
 
