@@ -23,8 +23,6 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticD
 
 ## Red wine == 1 ; White wine == 0
 
-warnings.filterwarnings('ignore')
-
 def get_models():
     models = {
         'Logistic Regression': LogisticRegression(max_iter = int(1e6)),
@@ -32,15 +30,15 @@ def get_models():
         'K-Nearest Neighbors': KNeighborsClassifier(),
         'Linear Discriminant Analysis': LinearDiscriminantAnalysis(),
         'Quadratic Discriminant Analysis': QuadraticDiscriminantAnalysis(),
-        'Support Vector Classifier': SVC(),
+        'Support Vector Classifier': SVC(probability = True),
         'Random Forest': RandomForestClassifier(),
-        'XGBoost': XGBClassifier(use_label_encoder = False, eval_metric = 'mlogloss')
+        'XGBoost': XGBClassifier(eval_metric = 'mlogloss')
     }
     return models
 
 model_params = {
     'Logistic Regression': {'C': list(range(-5, 6)), 'penalty': ['l1', 'l2', 'elasticnet', 'None'], 'solver': ['lbfgs', 'liblinear', 'saga']},
-    'Gaussian Naive Bayes': {'var_smoothing': list(range(5, -6, -1))},
+    'Gaussian Naive Bayes': {'var_smoothing': list(range(3, -4, -1))},
     'K-Nearest Neighbors': {'n_neighbors': list(range(1, 11)), 'leaf_size': list(range(10, 31, 5)), 'p': [1, 2], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan', 'minkowski']},
     'Linear Discriminant Analysis': {'solver': ['svd', 'lsqr', 'eigen'], 'shrinkage': list(range(0, 11, 2)),  'n_components': [i for i in range(8)], 'store_covariance': [False, True]},
     'Quadratic Discriminant Analysis': {'reg_param': list(range(0, -11, -1))},
@@ -48,7 +46,6 @@ model_params = {
     'Random Forest': {'n_estimators': list(range(100, 501, 50)), 'max_depth': list(range(1, 10, 2)), 'max_features': ['sqrt', 'log2'], 'criterion': ['gini', 'entropy']},
     'XGBoost': {'max_depth': list(range(1, 12, 2)), 'n_estimators': list(range(50, 301, 50))}
 }
-
 class ModelTuner:
     def __init__(self, model, params, x, y, cv) -> None:
         self.model = model
@@ -61,57 +58,55 @@ class ModelTuner:
     def tune_model(self):
         self.grid_search = GridSearchCV(estimator = self.model, param_grid = self.params, cv = self.cv, n_jobs = -1, scoring = "accuracy")
         self.grid_search.fit(self.x, self.y)
-
-        return self.grid_search.best_params_, self.grid_search.best_score_    
+        return self.grid_search.best_params_, self.grid_search.best_score_
 
 class FeatureSelector:
-    def __init__(self, cv, model, params, x, y) -> None:
+    def __init__(self, cv, model, x, y) -> None:
         self.cv = cv
         self.model = model
-        self.params = params
         self.x = x
         self.y = y
         self.sfs = None
 
     def select_features(self):
-        self.sfs = SFS(
-            cv = self.cv, estimator = self.model, forward = True, floating = True, k_features = "best", scoring = "accuracy"
-        )
+        self.sfs = SFS(estimator = self.model, cv = self.cv, forward = True, floating = True, k_features = "best", scoring = "accuracy", n_jobs = -1)
         self.sfs.fit(self.x, self.y)
-        
-        # print(f"Select Features of {self.model.__class__.__name__}: {self.sfs.k_feature_names_}")
-        # print(f"Classification score of {self.model.__class__.__name__}: {self.sfs.k_score_}")
-        
         return self.sfs.k_feature_names_
 
 class WineTypeModel:
-    def __init__(self, x_train, x_test, y_train, y_test) -> None:
+    def __init__(self, x_train, x_test, y_train, y_test, name) -> None:
         self.x_train = x_train
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
+        self.name = name
     
     def train_and_evaluate(self, model, params):
-        cls_ = model(**params)
+        if self.name == "Support Vector Classifier":
+            cls_ = SVC(probability = True, **params)
+        else:    
+            cls_ = model(**params)
         cls_.fit(self.x_train, self.y_train)
         y_pred = cls_.predict(self.x_test)
-        y_pred_score = cls_.predict_proba(self.x_test)
 
         self._print_classification_report(y_pred)
         self._plot_roc_curve(cls_)
         self._plot_decision_region(cls_)
-        
-        return y_pred_score
     
     def _print_classification_report(self, y_pred):
         print(classification_report(self.y_test, y_pred))
     
     def _plot_roc_curve(self, model):
-        fpr, tpr, thresholds = roc_curve(self.y_test, model.predict(self.x_test))
+        fpr, tpr, thresholds = roc_curve(self.y_test, model.predict_proba(self.x_test)[:, 1])
         roc_auc = auc(fpr, tpr)
-        display = RocCurveDisplay(fpr = fpr, tpr = tpr, roc_auc = roc_auc, estimator_name = model.__class__.__name__)
+        display = RocCurveDisplay(
+            fpr = fpr, tpr = tpr, roc_auc = roc_auc, estimator_name = model.__class__.__name__
+            )
         display.plot()
-        plt.show()
+        plt.title(f"{self.name} ROC curve")
+        plt.savefig(f"result/{self.name} ROC curve", dpi = 300)
+        # plt.show()
+        plt.close()
 
     def _plot_decision_region(self, model):
         pca = PCA(n_components = 2)
@@ -119,21 +114,22 @@ class WineTypeModel:
         x_test_pca = pca.transform(self.x_test)
         model_fit_pca = model.fit(x_train_pca, self.y_train)
         
-        plot_decision_regions(x_test_pca, self.y_test.values, clf = model_fit_pca, colors = ('#fffacd', '#a00028'))
-        plt.title("Decision Region")
-        plt.show()
+        plot_decision_regions(x_test_pca, self.y_test.values, clf = model_fit_pca, colors = '#fffacd,#a00028')
+        plt.title(f"{self.name} Decision Region")
+        plt.savefig(f"result/{self.name} Decision Region", dpi = 300)
+        # plt.show()
+        plt.close()
     
 def main():
+    warnings.filterwarnings('ignore')
     os.chdir("/Users/shenchingfeng/GitHub/ML-Wine-Type-and-Quality-Classification/")
     df = pd.read_csv("data/Wine.csv")
     kf = StratifiedKFold(n_splits = 10, shuffle = True, random_state = 2024)
     
     models = get_models()
-    para_tune_result = {}
+    model_name, model_score, model_features, tuned_params = [], [], [], []
 
-    for name, model in tqdm(models.items()):
-
-        ## Tuning Paramters
+    for name, model in models.items():
         print(f"Tuning Parameters {name}...")
 
         x = df.drop(columns = ["type", "quality", "alcohol", "pH", "fixed acidity"])
@@ -147,21 +143,24 @@ def main():
         tuner = ModelTuner(model = model, params = param, x = x, y = y, cv = kf)
         best_params, score = tuner.tune_model()
 
-        ## Feature Selection
         print(f"Selecting Features {name}...")
-
-        selector = FeatureSelector(cv = kf, model = model, params = best_params, x = x, y = y)
+        selector = FeatureSelector(cv = kf, model = model, x = x, y = y)
         best_features = selector.select_features()
 
-        ## Model Training
         print(f"Training {name}...")
-        
-        trainer = WineTypeModel(x_train = x_train, x_test = x_test, y_train = y_train, y_test = y_test)
-        model_score = trainer.train_and_evaluate(model = model, params = best_params)
+        trainer = WineTypeModel(x_train = x_train, x_test = x_test, y_train = y_train, y_test = y_test, name = name)
+        trainer.train_and_evaluate(model = type(model), params = best_params)
 
-        para_tune_result[name] = round(model_score, 4)
+        model_name.append(name)
+        model_score.append(round(score, 4))
+        model_features.append(best_features)
+        tuned_params.append(best_params)
+
+    model_tune_result = pd.DataFrame({
+        "Model Name": model_name, "Model Score": model_score, "Model Features": model_features, "Model Params": tuned_params
+    })
     
-    print(para_tune_result)
+    model_tune_result.to_csv("result/Result.csv", index = False)
 
 if __name__ == "__main__":
     main()

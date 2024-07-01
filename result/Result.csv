@@ -1,0 +1,9 @@
+Model Name,Model Score,Model Features,Model Params
+Logistic Regression,1.0,"('0', '1', '2', '5')","{'C': 2, 'penalty': 'l1', 'solver': 'saga'}"
+Gaussian Naive Bayes,0.9994,"('residual sugar', 'total sulfur dioxide')",{'var_smoothing': 0}
+K-Nearest Neighbors,1.0,"('0', '1', '2', '4', '5', '6', '7')","{'leaf_size': 10, 'metric': 'manhattan', 'n_neighbors': 1, 'p': 1, 'weights': 'uniform'}"
+Linear Discriminant Analysis,0.9995,"('volatile acidity', 'chlorides', 'total sulfur dioxide')","{'n_components': 1, 'shrinkage': 0, 'solver': 'lsqr', 'store_covariance': False}"
+Quadratic Discriminant Analysis,1.0,"('free sulfur dioxide', 'total sulfur dioxide', 'density')",{'reg_param': 0}
+Support Vector Classifier,1.0,"('0', '1', '2', '5')","{'C': 10.0, 'gamma': 0.1, 'kernel': 'rbf'}"
+Random Forest,1.0,"('volatile acidity', 'residual sugar')","{'criterion': 'gini', 'max_depth': 1, 'max_features': 'sqrt', 'n_estimators': 350}"
+XGBoost,0.9998,"('residual sugar', 'chlorides')","{'max_depth': 1, 'n_estimators': 50}"
