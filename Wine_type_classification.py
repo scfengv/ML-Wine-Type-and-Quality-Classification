@@ -39,12 +39,12 @@ def get_models():
 model_params = {
     'Logistic Regression': {'C': list(range(-5, 6)), 'penalty': ['l1', 'l2', 'elasticnet', 'None'], 'solver': ['lbfgs', 'liblinear', 'saga']},
     'Gaussian Naive Bayes': {'var_smoothing': list(range(3, -4, -1))},
-    'K-Nearest Neighbors': {'n_neighbors': list(range(1, 11)), 'leaf_size': list(range(10, 31, 5)), 'p': [1, 2], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan', 'minkowski']},
-    'Linear Discriminant Analysis': {'solver': ['svd', 'lsqr', 'eigen'], 'shrinkage': list(range(0, 11, 2)),  'n_components': [i for i in range(8)], 'store_covariance': [False, True]},
-    'Quadratic Discriminant Analysis': {'reg_param': list(range(0, -11, -1))},
+    'K-Nearest Neighbors': {'n_neighbors': list(range(1, 11)), 'leaf_size': list(range(1, 31, 5)), 'p': [1, 2], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan', 'minkowski']},
+    'Linear Discriminant Analysis': {'solver': ['svd', 'lsqr', 'eigen'], 'shrinkage': [i / 10 for i in range(0, 11, 2)] + ['auto', None],  'n_components': [i for i in range(8)], 'store_covariance': [False, True]},
+    'Quadratic Discriminant Analysis': {'reg_param': [i / 10 for i in range(0, 11, 2)]},
     'Support Vector Classifier': {'C': np.logspace(-3, 3, num = 7, base = 10), 'kernel': ['rbf', 'sigmoid'], 'gamma': np.logspace(-3, 3, num = 7, base = 10)},
-    'Random Forest': {'n_estimators': list(range(100, 501, 50)), 'max_depth': list(range(1, 10, 2)), 'max_features': ['sqrt', 'log2'], 'criterion': ['gini', 'entropy']},
-    'XGBoost': {'max_depth': list(range(1, 12, 2)), 'n_estimators': list(range(50, 301, 50))}
+    'Random Forest': {'n_estimators': list(range(50, 501, 50)) + [1], 'max_depth': list(range(1, 12, 2)), 'max_features': ['sqrt', 'log2'], 'criterion': ['gini', 'entropy']},
+    'XGBoost': {'max_depth': list(range(1, 12, 2)), 'n_estimators': list(range(50, 301, 50)) + [1]}
 }
 class ModelTuner:
     def __init__(self, model, params, x, y, cv) -> None:
