@@ -8,18 +8,16 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
-from sklearn.decomposition import PCA
 from imblearn.over_sampling import SMOTE
 from sklearn.naive_bayes import GaussianNB
-from mlxtend.plotting import plot_decision_regions
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler, label_binarize
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split
+from sklearn.metrics import classification_report, roc_curve, auc, ConfusionMatrixDisplay
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearchCV, train_test_split
-from sklearn.metrics import classification_report, RocCurveDisplay, roc_curve, auc, ConfusionMatrixDisplay
 
 def get_models():
     models = {
