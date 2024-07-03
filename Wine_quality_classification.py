@@ -28,7 +28,7 @@ def get_models():
         'K-Nearest Neighbors': KNeighborsClassifier(),
         'Linear Discriminant Analysis': LinearDiscriminantAnalysis(),
         'Quadratic Discriminant Analysis': QuadraticDiscriminantAnalysis(),
-        'Support Vector Classifier': SVC(max_iter = int(1e7), probability = False, verbose = 1),
+        'Support Vector Classifier': SVC(max_iter = int(1e7), probability = False),
         'Random Forest': RandomForestClassifier(),
         # 'XGBoost': XGBClassifier(eval_metric = 'mlogloss')
     }
@@ -40,7 +40,7 @@ model_params = {
     'K-Nearest Neighbors': {'n_neighbors': list(range(1, 11)), 'leaf_size': list(range(1, 31, 5)), 'p': [1, 2], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan', 'minkowski']},
     'Linear Discriminant Analysis': {'solver': ['svd', 'lsqr', 'eigen'], 'shrinkage': [i / 10 for i in range(0, 11, 2)] + ['auto', None],  'n_components': [i for i in range(8)], 'store_covariance': [False, True]},
     'Quadratic Discriminant Analysis': {'reg_param': [i / 10 for i in range(0, 11, 2)]},
-    'Support Vector Classifier': {'C': np.logspace(-3, 3, num = 7, base = 10), 'kernel': ['linear', 'poly', 'rbf', 'sigmoid'], 'gamma': np.logspace(-3, 3, num = 7, base = 10)},
+    'Support Vector Classifier': {'C': np.logspace(-3, 3, num = 7, base = 10), 'kernel': ['poly', 'rbf', 'sigmoid'], 'degree': list(range(1, 6, 1)), 'gamma': ['auto']},
     'Random Forest': {'n_estimators': list(range(50, 501, 50)) + [1], 'max_depth': list(range(1, 12, 2)), 'max_features': ['sqrt', 'log2'], 'criterion': ['gini', 'entropy']},
     'XGBoost': {'max_depth': list(range(1, 12, 2)), 'n_estimators': list(range(50, 301, 50)) + [1], 'learning_rate': [round(float(x), 2) for x in np.linspace(start = 0.01, stop = 0.2, num = 10)]}
 }
@@ -191,41 +191,46 @@ def main():
                 x = StandardScaler().fit_transform(x)
             x_train, x_test, y_train, y_test = train_test_split(x, y, train_size = 0.75, random_state = 2024)
 
-            if name != "Support Vector Classifier":
-                param = model_params[name]
-                tuner = ModelTuner(model = model, params = param, x = x, y = y, cv = kf)
-                best_params, score = tuner.tune_model()
+            param = model_params[name]
+            tuner = ModelTuner(model = model, params = param, x = x, y = y, cv = kf)
+            best_params, score = tuner.tune_model()
 
-            else:
-                best_score_svc = -1
-                best_params_svc = {}
+            # if name != "Support Vector Classifier":
+            #     param = model_params[name]
+            #     tuner = ModelTuner(model = model, params = param, x = x, y = y, cv = kf)
+            #     best_params, score = tuner.tune_model()
 
-                for c in tqdm(np.logspace(-3, 3, num = 7, base = 10)):
-                    for k in tqdm(['linear', 'poly', 'rbf', 'sigmoid']):
-                        for g in tqdm(np.logspace(-3, 3, num = 7, base = 10)):
+            # else:
+            #     best_score_svc = -1
+            #     best_params_svc = {}
 
-                            m = SVC(C = c, kernel = k, gamma = g)
-                            m.fit(x_train, y_train)
-                            y_pred_svc = m.predict(x_test)
-                            score_svc = accuracy_score(y_test, y_pred_svc)
-                            if score_svc > best_score_svc:
-                                best_score_svc = score_svc
-                                best_params_svc["C"] = c
-                                best_params_svc["gamma"] = g
-                                best_params_svc["kernel"] = k
+            #     for c in tqdm(np.logspace(-3, 3, num = 7, base = 10)):
+            #         for k in tqdm(['linear', 'poly', 'rbf', 'sigmoid']):
+            #             for g in tqdm(np.logspace(-3, 3, num = 7, base = 10)):
 
-                    gc.collect()
+            #                 m = SVC(C = c, kernel = k, gamma = g)
+            #                 m.fit(x_train, y_train)
+            #                 y_pred_svc = m.predict(x_test)
+            #                 score_svc = accuracy_score(y_test, y_pred_svc)
+            #                 if score_svc > best_score_svc:
+            #                     best_score_svc = score_svc
+            #                     best_params_svc["C"] = c
+            #                     best_params_svc["gamma"] = g
+            #                     best_params_svc["kernel"] = k
+
+            #         gc.collect()
 
             print(f"Selecting Features {name} / {r}...")
-            if name != "Support Vector Classifier":
-                selector = FeatureSelector(cv = kf, model = type(model), params = best_params, x = x, y = y)
-            else:
-                selector = FeatureSelector(cv = kf, model = SVC(C = best_params_svc["C"], kernel = best_params_svc["kernel"], gamma = best_params_svc["gamma"], probability = False, max_iter = int(1e7)))
+            selector = FeatureSelector(cv = kf, model = type(model), params = best_params, x = x, y = y)
             best_features = selector.select_features()
 
-            start_time = time.time()
+            # if name != "Support Vector Classifier":
+                # selector = FeatureSelector(cv = kf, model = type(model), params = best_params, x = x, y = y)
+            # else:
+            #     selector = FeatureSelector(cv = kf, model = SVC(C = best_params_svc["C"], kernel = best_params_svc["kernel"], gamma = best_params_svc["gamma"], probability = False, max_iter = int(1e7)))
 
             print(f"Training {name} / {r}...")
+            start_time = time.time()
             trainer = WineTypeModel(x_train = x_train, x_test = x_test, y_train = y_train, y_test = y_test, name = name, r = r)
             trainer.train_and_evaluate(model = type(model), params = best_params)
 

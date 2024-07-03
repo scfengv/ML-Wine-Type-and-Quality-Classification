@@ -1,0 +1,8 @@
+Model Name,Model Score,Model Features,Model Params,Training Times (sec)
+Logistic Regression,0.5169,"('0', '1', '2', '3', '4', '5', '6', '7', '8')","{'C': 5, 'penalty': 'l1', 'solver': 'saga'}",0.85
+Gaussian Naive Bayes,0.4434,"('density',)",{'var_smoothing': 0.0001},0.41
+K-Nearest Neighbors,0.6283,"('0', '2', '3', '4', '5', '6', '7')","{'leaf_size': 1, 'metric': 'euclidean', 'n_neighbors': 10, 'p': 1, 'weights': 'distance'}",1.04
+Linear Discriminant Analysis,0.5141,"('volatile acidity', 'citric acid', 'residual sugar', 'chlorides', 'free sulfur dioxide', 'total sulfur dioxide', 'density', 'sulphates', 'type')","{'n_components': 1, 'shrinkage': None, 'solver': 'svd', 'store_covariance': False}",0.79
+Quadratic Discriminant Analysis,0.493,"('volatile acidity', 'citric acid', 'residual sugar', 'free sulfur dioxide', 'density', 'sulphates', 'type')",{'reg_param': 0.0},0.83
+Support Vector Classifier,0.5673,"('0', '2', '3', '4', '5', '6', '7')","{'C': 1000.0, 'degree': 1, 'gamma': 'auto', 'kernel': 'rbf'}",39.54
+Random Forest,0.6434,"('volatile acidity', 'citric acid', 'residual sugar', 'chlorides', 'free sulfur dioxide', 'total sulfur dioxide', 'density', 'sulphates', 'type')","{'criterion': 'entropy', 'max_depth': 11, 'max_features': 'log2', 'n_estimators': 450}",4.2
